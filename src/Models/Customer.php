@@ -1,5 +1,5 @@
 <?php
-namespace AdminGen\Controllers;
+namespace AdminGen\Models;
 
 use PhalconX\Mvc\Model;
 
@@ -29,7 +29,6 @@ class Customer extends Model
     * @var string
     */
    public $memo;
-
 
    public function getSource()
    {

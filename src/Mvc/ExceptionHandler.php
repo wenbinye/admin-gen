@@ -113,17 +113,25 @@ class ExceptionHandler extends Injectable
     
     private function handleAjaxException($exception)
     {
+        $error = [
+            'error_code' => $exception->getCode(),
+            'error' => $exception->getMessage()
+        ];
         if ($exception instanceof DispatchException) {
             $this->response->setStatusCode(404);
-            $this->response->setJsonContent([
+            $this->log($exception, 'info');
+            $error = [
                 'error' => 'request ' . $this->request->getUri() . ' not found',
                 'error_code' => Exception::ERROR_NOT_FOUND,
-            ])->send();
-            exit;
-        }
-        if ($exception instanceof ValidationException) {
+            ];
+        } elseif ($exception instanceof ValidationException) {
             $this->response->setStatusCode(400);
             $this->log($exception, 'info');
+            $errors = [];
+            foreach ($exception->getErrors() as $msg) {
+                $errors[$msg->getField()][] = $msg->getMessage();
+            }
+            $error['errors'] = $errors;
         } elseif ($exception instanceof Exception
                   && $exception->getCode() == Exception::ERROR_NOT_FOUND) {
             $this->response->setStatusCode(404);
@@ -132,10 +140,7 @@ class ExceptionHandler extends Injectable
             $this->response->setStatusCode(500);
             $this->log($exception, 'error');
         }
-        $this->response->setJsonContent([
-            'error_code' => $exception->getCode(),
-            'error' => $exception->getMessage()
-        ])->send();
+        $this->response->setJsonContent($error)->send();
         exit;
     }
 

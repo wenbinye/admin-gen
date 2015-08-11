@@ -12,10 +12,9 @@ use Phalcon\Mvc\Model;
 // use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
 use Phalcon\Db\Adapter\Pdo\Sqlite as DbAdapter;
 
-use Phalcon\Mvc\Model\Metadata\Apc as MetaDataAdapter;
-
 use Phalcon\Events\Manager as EventsManager;
 
+use Phalcon\Session\Adapter\Files as SessionAdapter;
 use Phalcon\Mvc\Url as UrlResolver;
 use PhalconX\Mvc\Router\Annotations as Router;
 use PhalconX\Cli\Router as CliRouter;
@@ -27,7 +26,10 @@ use PhalconX\Mvc\ViewHelper;
 use PhalconX\Validator;
 use PhalconX\Util\Reflection;
 use PhalconX\Util\ObjectMapper;
-use Phalcon\Annotations\Adapter\Apc as Annotations;
+use Phalcon\Mvc\Model\Metadata\Apc as MetadataApc;
+use PhalconX\Mvc\Metadata\Memory as MetadataMemory;
+use Phalcon\Annotations\Adapter\Apc as AnnotationsApc;
+use Phalcon\Annotations\Adapter\Memory as AnnotationsMemory;
 
 $di = new FactoryDefault();
 
@@ -72,7 +74,18 @@ $di['db'] = function () use ($di, $config) {
     }
     return $conn;
 };
-$di['modelsMetadata'] = MetaDataAdapter::CLASS;
+
+if (extension_loaded('apcu')) {
+    $di['modelsMetadata'] = function() use ($config) {
+        return new MetadataApc($config->metadata->toArray());
+    };
+    $di['annotations'] = function() use ($config) {
+        return new AnnotationsApc($config->annotations->toArray());
+    };
+} else {
+    $di['modelsMetadata'] = MetadataMemory::CLASS;
+    $di['annotations'] = AnnotationsMemory::CLASS;
+}
 
 $di['eventsManager'] = function () use ($di, $config) {
     $eventsManager = new EventsManager();
@@ -144,8 +157,14 @@ if (PHP_SAPI == 'cli') {
     };
 }
 
+$di['session'] = function() {
+    $session = new SessionAdapter;
+    $session->start();
+    return $session;
+};
+
 $di['validator'] = Validator::CLASS;
 $di['reflection'] = Reflection::CLASS;
 $di['objectMapper'] = ObjectMapper::CLASS;
-$di['annotations'] = Annotations::CLASS;
+$di['security'] = 'AdminGen\Security';
 return $di;

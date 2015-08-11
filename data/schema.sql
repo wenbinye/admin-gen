@@ -1,8 +1,8 @@
 CREATE TABLE `customers` (
  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
- `name` VARCHAR( 100 ) NOT NULL ,
- `email` VARCHAR( 100 ) NOT NULL ,
- `mobile` VARCHAR( 100 ) NOT NULL,
+ `name` VARCHAR(100) NOT NULL ,
+ `email` VARCHAR(100) NOT NULL ,
+ `mobile` VARCHAR(100) NOT NULL,
  `memo` VARCHAR(1024)
 );
 

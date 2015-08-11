@@ -9,10 +9,15 @@ class {{class_name}} extends SimpleModel
 {% for column in columns %}
    /**
     * @{{ column['element'] }}
+
+{% if column['validator'] is defined %}
     * @{{ column['validator'] }}
 
+{% endif %}
     */
    public ${{ column['name'] }};
+{% if not loop.last %}
 
+{% endif %}
 {% endfor %}
 }

@@ -9,36 +9,34 @@ use AdminGen\Inflect;
 /**
  * @Task(help="Generate form")
  */
-class FormTask extends Task
+class FormTask extends ModelTask
 {
     /**
      * @Argument(required=true, help="The table name for the form")
      */
     public $table;
 
-    private static $TYPE_ALIASES = [
-        'varchar' => 'string',
-        'char' => 'string',
-        'text' => 'string',
-        'tinyblob' => 'binary',
-        'blob' => 'binary',
-        'mediumblob' => 'binary',
-        'longblob' => 'binary',
+    /**
+     * @Option('-n', '--namespace', help="The namespace for the model class")
+     */
+    public $namespace = 'AdminGen\Forms';
+
+    private static $TYPE_ELEMENTS = [
+        Column::TYPE_INTEGER => 'Numeric',
+        Column::TYPE_DATE => 'Date',
+        Column::TYPE_DATETIME => 'Datetime',
+        Column::TYPE_BLOB => 'File',
+        Column::TYPE_MEDIUMBLOB => 'File',
+        Column::TYPE_LONGBLOB => 'File',
+        Column::TYPE_TINYBLOB => 'File',
     ];
     
     public function execute()
     {
-        $db = $this->db;
-        $columns = $db->describeColumns($this->table);
-        $name = Text::camelize(Inflect::singularize($this->table));
-        $vars['namespace'] = 'AdminGen\Forms';
-        $vars['class_name'] = $name;
-        $vars['columns'] = $this->convertColumns($columns);
-        // print_r($columns);
-        echo $this->view->getPartial('gen/form', $vars);
+        $this->gen('gen/form');
     }
 
-    private function convertColumns($columns)
+    protected function convertColumns($columns)
     {
         $ret = [];
         foreach ($columns as $col) {
@@ -53,20 +51,38 @@ class FormTask extends Task
 
     private function createElement($col)
     {
+        $type = $col->getType();
+        $element = 'Text';
+        if ($col->isAutoIncrement()) {
+            $element = 'Hidden';
+        } elseif ($type == Column::TYPE_VARCHAR || $type == Column::TYPE_CHAR) {
+            if ($col->getSize() > 255) {
+                $element = 'TextArea';
+            }
+        } elseif (isset(self::$TYPE_ELEMENTS[$type])) {
+            $element = self::$TYPE_ELEMENTS[$type];
+        } 
         
+        return $element;
     }
 
     private function createValidator($col)
     {
-        
-    }
-    
-    private function stringify($value) 
-    {
-        if (is_string($value)) {
-            return "'".addslashes($value)."'";
-        } else {
-            return $value;
+        $args = [];
+        $type = $this->getTypeName($col->getType());
+        if ($col->isNotNull() && !$col->isAutoIncrement()) {
+            $args['required'] = true;
+        }
+        if (in_array($type, ['integer', 'string', 'date', 'datetime', 'boolean'])) {
+            $args['type'] = $type;
+        } elseif (in_array($type, ['decimal', 'float', 'double'])) {
+            $args['type'] = 'numeric';
+        }
+        if ($args['type'] == 'string' && $col->getSize() > 0) {
+            $args['maxLength'] = $col->getSize();
+        }
+        if (!empty($args)) {
+            return 'Valid('. $this->stringify($args) .')';
         }
     }
 }

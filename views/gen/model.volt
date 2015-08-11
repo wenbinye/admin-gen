@@ -14,7 +14,6 @@ class {{class_name}} extends Model
    public ${{ column['name'] }}{% if column.default is defined %} = {{ column.default }}{% endif %};
 
 {% endfor %}
-
    public function getSource()
    {
        return "{{ table_name }}";

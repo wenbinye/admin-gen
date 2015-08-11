@@ -1,20 +1,26 @@
-define(["jquery", "text!./templates/dialog.html", "text!./templates/dialog-button.html", "bootstrap", "hogan"], function($, dialogTemplate, buttonTemplate) {
-    var Dialog = function(options) {
-        this.options = options;
-        this.template = Hogan.compile(buttonTemplate);
-    };
-
-    var getDialogContainer = function() {
-        var $el = $("#txf-ui-dialog");
+define([
+    "jquery",
+    "text!./templates/dialog.html",
+    "text!./templates/dialog-button.html",
+    "bootstrap",
+    "hogan"
+], function($, dialogTemplate, buttonTemplate) {
+    var getContainer = function() {
+        var $el = $("#ui-dialog");
         if ($el.size() == 0) {
             $el = $(dialogTemplate).appendTo(document.body);
         }
         return $el;
     }
 
+    var Dialog = function(options) {
+        this.options = options;
+        this.template = Hogan.compile(buttonTemplate);
+    };
+
     Dialog.prototype.show = function() {
         var self = this;
-        var $dialog = getDialogContainer();
+        var $dialog = getContainer();
         $(".modal-title", $dialog).text(this.options.title);
         $(".modal-body p", $dialog).text(this.options.message);
         if ( this.options.buttons ) {
@@ -46,15 +52,40 @@ define(["jquery", "text!./templates/dialog.html", "text!./templates/dialog-butto
         this.container.modal('hide');
     };
 
-    Dialog.newDialog = function(options) {
+    Dialog.create = function(options) {
         return new Dialog(options);
     };
 
-    Dialog.showDialog = function(title, msg) {
+    Dialog.alert = function(title, msg) {
         return new Dialog({
             title: title,
             message: msg,
-            buttons: [{text: "关闭"}]
+            buttons: [{text: "Close"}]
+        }).show();
+    };
+
+    Dialog.confirm = function(title, msg, callback) {
+        return new Dialog({
+            title: title,
+            message: msg,
+            buttons: [
+                {
+                    text: "Cancel",
+                    type: "default",
+                    click: function(dialog) {
+                        dialog.hide();
+                        callback(false);
+                    }
+                },
+                {
+                    text: "Ok",
+                    type: "primary",
+                    click: function(dialog) {
+                        dialog.hide();
+                        callback(true);
+                    }
+                }
+            ]
         }).show();
     };
 

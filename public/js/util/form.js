@@ -30,14 +30,6 @@ define(["jquery"], function($) {
             }
             return data;
         },
-        
-        setForm: function($box, form) {
-            for(var k in form) {
-                if(form.hasOwnProperty(k)) {
-                    $('input[name="' + k + '"], textarea[name="' + k + '"]', $box).val(form[k]);
-                }
-            }
-        },
 
         resetForm: function($box, form) {
             $('input, textarea', $box).each(function() {
@@ -47,7 +39,16 @@ define(["jquery"], function($) {
                     || $this.attr('type') == 'radio') {
                     $this.prop('checked', false);
                 } else {
-                    $this.val(form.hasOwnProperty(name) ? form[name] : '');
+                    if ($this.is('textarea')) {
+                        var wysihtml = $this.data('wysihtml5');
+                        if (wysihtml) {
+                            wysihtml.editor.clear().setValue(form[name]);
+                        } else {
+                            $this.val(form[name]);
+                        }
+                    } else {
+                        $this.val(form[name]);
+                    }
                 }
             });
         },

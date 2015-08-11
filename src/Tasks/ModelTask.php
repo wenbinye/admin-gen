@@ -11,6 +11,8 @@ use AdminGen\Inflect;
  */
 class ModelTask extends Task
 {
+    const TYPE_UNKNOWN = 'unknown';
+    
     /**
      * @Argument(required=true, help="The table name for the model")
      */
@@ -19,9 +21,24 @@ class ModelTask extends Task
     /**
      * @Option('-n', '--namespace', help="The namespace for the model class")
      */
-    public $namespace = 'AdminGen\Controllers';
+    public $namespace = 'AdminGen\Models';
 
-    private static $TYPE_ALIASES = [
+    /**
+     * @Option('-d', '--dir', help="Output directory")
+     */
+    public $dir = 'src';
+
+    /**
+     * @Option('-p', '--prefix', help="autoload prefix, affetct the output directory")
+     */
+    public $prefix = 'AdminGen';
+
+    /**
+     * @Option('--debug', type=boolean, help="turn on debug mode")
+     */
+    public $debug;
+
+    protected static $TYPE_ALIASES = [
         'varchar' => 'string',
         'char' => 'string',
         'text' => 'string',
@@ -33,18 +50,34 @@ class ModelTask extends Task
     
     public function execute()
     {
-        $db = $this->db;
-        $columns = $db->describeColumns($this->table);
+        $this->gen('gen/model');
+    }
+
+    protected function gen($view)
+    {
         $name = Text::camelize(Inflect::singularize($this->table));
+        $outfile = $this->getFilename($name);
+        if (file_exists($outfile)
+            && !$this->confirm("Output file $outfile exists, overwrite [y/N] ")) {
+            return;
+        }
+
+        $columns = $this->db->describeColumns($this->table);
         $vars['namespace'] = $this->namespace;
         $vars['class_name'] = $name;
         $vars['table_name'] = $this->table;
         $vars['columns'] = $this->convertColumns($columns);
         // print_r($columns);
-        echo $this->view->getPartial('gen/model', $vars);
+        $code = $this->view->getPartial($view, $vars);
+        if ($this->debug) {
+            echo $code;
+        } else {
+            file_put_contents($outfile, $code);
+            echo "Code was generated to $outfile\n";
+        }
     }
 
-    private function convertColumns($columns)
+    protected function convertColumns($columns)
     {
         $ret = [];
         foreach ($columns as $col) {
@@ -57,7 +90,7 @@ class ModelTask extends Task
         return $ret;
     }
 
-    private function getTypeName($type)
+    protected function getTypeName($type)
     {
         static $types;
         if (!$types) {
@@ -68,16 +101,58 @@ class ModelTask extends Task
                 }
             }
         }
-        $name = isset($types[$type]) ? $types[$type] : 'unknown';
+        $name = isset($types[$type]) ? $types[$type] : self::TYPE_UNKNOWN;
         return isset(self::$TYPE_ALIASES[$name]) ? self::$TYPE_ALIASES[$name] : $name;
     }
 
-    private function stringify($value) 
+    protected function stringify($value) 
     {
-        if (is_string($value)) {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        } elseif (is_string($value) && !ctype_alnum($value)) {
             return "'".addslashes($value)."'";
+        } elseif (is_array($value)) {
+            $args = [];
+            foreach ($value as $name => $val) {
+                if (is_int($name)) {
+                    $args[] = $this->stringify($val);
+                } else {
+                    $args[] = "$name=" . $this->stringify($val);
+                }
+            }
+            return implode(', ', $args);
         } else {
             return $value;
+        }
+    }
+
+    protected function getFilename($name)
+    {
+        if ($this->prefix) {
+            if (!Text::startsWith($this->namespace, $this->prefix)) {
+                die("namespace '{$this->namespace}' should start with '{$this->prefix}'");
+            }
+            $ns = substr($this->namespace, strlen($this->prefix));
+        } else {
+            $ns = $this->namespace;
+        }
+        
+        $dir = ($this->dir ? rtrim($this->dir, '/') . '/' : '')
+            . str_replace('\\', '/', trim($ns, '\\'));
+        if (!$this->debug && !is_dir($dir) && !mkdir($dir, 0777, true)) {
+            die("Cannot create directory $dir");
+        }
+        return rtrim($dir, '/') . "/$name.php";
+    }
+
+    protected function confirm($msg)
+    {
+        if ($this->debug) {
+            return true;
+        }
+        $ans = readline($msg);
+        if (in_array(strtolower($ans), ['y', 'yes'])) {
+            return true;
         }
     }
 }

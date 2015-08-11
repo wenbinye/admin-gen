@@ -29,7 +29,15 @@ $config = new Config([
         'db' => [
             'PhalconX\Db\DbListener' => ['logging' => true]
         ]
-    ]
+    ],
+    'annotations' => [
+        'prefix' => 'v1',
+        'lifetime' => 10,
+    ],
+    'metadata' => [
+        'prefix' => 'v1',
+        'lifetime' => 10,
+    ],
 ]);
 
 if (PHP_SAPI != 'cli') {

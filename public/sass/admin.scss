@@ -1,0 +1,12 @@
+@import "metisMenu.scss";
+@import "sb-admin-2.scss";
+@import "font-awesome.scss";
+@import "bootstrap-datetimepicker.scss";
+@import "bootstrap-dataTables.scss";
+@import "bootstrap-wysihtml5.scss";
+
+@media (min-width:768px) {
+    .modal-dialog {
+        width: 700px;
+    }
+}

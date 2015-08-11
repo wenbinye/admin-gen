@@ -1,5 +1,5 @@
 <?php
-namespace AdminGen\Models\DataTables;
+namespace AdminGen\Forms\DataTables;
 
 class Query
 {
