@@ -1,0 +1,20 @@
+{
+    "name": "wenbinye/admin-gen",
+    "description": "CRUD Admin Generator",
+    "require": {
+        "wenbinye/php-phalconx": "dev-develop"
+    },
+    "authors": [
+        {
+            "name": "Ye Wenbin",
+            "email": "yewenbin@chaozhuo.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "AdminGen\\": "src/",
+            "PhalconX\\": "../PhalconX/src/"
+        }
+    },
+    "minimum-stability": "dev"
+}

@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+use PhalconX\Cli\Application;
+
+define('APP_PATH', dirname(__DIR__));
+
+$loader = require(APP_PATH.'/vendor/autoload.php');
+$config = require(APP_PATH . '/config/config.php');
+$di = require(APP_PATH . '/config/services.php');
+
+$console = new Application($di);
+
+try {
+    // handle incoming arguments
+    $console->handle();
+} catch (\Exception $e) {
+    $di->getLogger()->error($e->getMessage() . "\n" . $e->getTraceAsString());
+    exit(-1);
+}
