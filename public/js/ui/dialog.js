@@ -5,10 +5,17 @@ define([
     "bootstrap",
     "hogan"
 ], function($, dialogTemplate, buttonTemplate) {
+    var hideTime = 0;
+    var Modal = $.fn.modal.Constructor;
+    var delay = Modal.TRANSITION_DURATION + Modal.BACKDROP_TRANSITION_DURATION;
+    
     var getContainer = function() {
         var $el = $("#ui-dialog");
         if ($el.size() == 0) {
             $el = $(dialogTemplate).appendTo(document.body);
+            $el.on('hide.bs.modal', function() {
+                hideTime = new Date().getTime();
+            });
         }
         return $el;
     }
@@ -20,6 +27,13 @@ define([
 
     Dialog.prototype.show = function() {
         var self = this;
+        var showTime = new Date().getTime();
+        if (hideTime && showTime - hideTime < delay) {
+            setTimeout(function() {
+                self.show();
+            }, delay);
+            return this;
+        }
         var $dialog = getContainer();
         $(".modal-title", $dialog).text(this.options.title);
         $(".modal-body p", $dialog).text(this.options.message);
@@ -60,7 +74,7 @@ define([
         return new Dialog({
             title: title,
             message: msg,
-            buttons: [{text: "Close"}]
+            buttons: [{text: "Close", type: "default"}]
         }).show();
     };
 
@@ -73,7 +87,6 @@ define([
                     text: "Cancel",
                     type: "default",
                     click: function(dialog) {
-                        dialog.hide();
                         callback(false);
                     }
                 },
@@ -81,7 +94,6 @@ define([
                     text: "Ok",
                     type: "primary",
                     click: function(dialog) {
-                        dialog.hide();
                         callback(true);
                     }
                 }

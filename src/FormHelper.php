@@ -16,11 +16,6 @@ class FormHelper
             } else {
                 $elem->setAttribute('class', 'form-control');
             }
-            $label = $elem->getLabel();
-            if (!$label) {
-                $label = ucfirst($elem->getName());
-            }
-            $elem->setLabel($label);
         }
     }
 

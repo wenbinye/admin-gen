@@ -1,10 +1,10 @@
 {{ '<?php' }}
 
-namespace {{namespace}};
+namespace {{namespace}}\{{ type.namespace }};
 
 use PhalconX\Mvc\SimpleModel;
 
-class {{class_name}} extends SimpleModel
+class {{ model_name }} extends SimpleModel
 {
 {% for column in columns %}
    /**

@@ -21,15 +21,14 @@ use PhalconX\Cli\Router as CliRouter;
 use Phalcon\Mvc\View;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use PhalconX\Mvc\View\VoltExtension;
-use PhalconX\Mvc\ViewHelper;
+use AdminGen\Mvc\ViewHelper;
 
 use PhalconX\Validator;
 use PhalconX\Util\Reflection;
 use PhalconX\Util\ObjectMapper;
 use Phalcon\Mvc\Model\Metadata\Apc as MetadataApc;
 use PhalconX\Mvc\Metadata\Memory as MetadataMemory;
-use Phalcon\Annotations\Adapter\Apc as AnnotationsApc;
-use Phalcon\Annotations\Adapter\Memory as AnnotationsMemory;
+use PhalconX\Annotations;
 
 $di = new FactoryDefault();
 
@@ -79,12 +78,8 @@ if (extension_loaded('apcu')) {
     $di['modelsMetadata'] = function() use ($config) {
         return new MetadataApc($config->metadata->toArray());
     };
-    $di['annotations'] = function() use ($config) {
-        return new AnnotationsApc($config->annotations->toArray());
-    };
 } else {
     $di['modelsMetadata'] = MetadataMemory::CLASS;
-    $di['annotations'] = AnnotationsMemory::CLASS;
 }
 
 $di['eventsManager'] = function () use ($di, $config) {
@@ -163,8 +158,9 @@ $di['session'] = function() {
     return $session;
 };
 
+$di['annotations'] = Annotations::CLASS;
 $di['validator'] = Validator::CLASS;
 $di['reflection'] = Reflection::CLASS;
 $di['objectMapper'] = ObjectMapper::CLASS;
-$di['security'] = 'AdminGen\Security';
+$di['generator'] = 'AdminGen\Generator';
 return $di;

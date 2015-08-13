@@ -57,11 +57,13 @@
         <div class="navbar-default sidebar" role="navigation">
           <div class="sidebar-nav navbar-collapse">
             <ul class="nav" id="side-menu">
+              {% for menu in menus() %}
               <li>
-                <a href="{{ url('/customer') }}">
-                  <i class="fa fa-th fa-fw"></i> Customer
+                <a href="{{ url(menu.url) }}">
+                  <i class="fa fa-th fa-fw"></i> {{ menu.label }}
                 </a>
               </li>
+              {% endfor %}
             </ul>
           </div>
         </div>
@@ -77,7 +79,6 @@
 
     <script src="{{ static_url('js/require.js') }}"></script>
     <script>
-window.BASE_URL = '';
 requirejs.config({
     baseUrl: "{{ static_url('js/') }}",
     shim : {

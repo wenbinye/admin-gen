@@ -1,29 +1,32 @@
-<?php
-namespace AdminGen\Controllers;
+{{ '<?php' }}
 
-use AdminGen\Forms\Customer as CustomerForm;
-use AdminGen\Models\Customer;
+namespace {{ namespace }}\{{ type.namespace }};
+
+use {{ namespace }}\Forms\{{ model_name }} as {{ model_name }}Form;
+use {{ namespace }}\Models\{{ model_name }};
 use AdminGen\FormHelper;
 use AdminGen\Forms\DataTables\Query;
 use PhalconX\Exception;
 use PhalconX\Exception\ValidationException;
+use AdminGen\Annotations\Sidebar;
 
 /**
- * @RoutePrefix("/customer")
+ * @Sidebar(url="{{ url }}", label="{{ name }}")
+ * @RoutePrefix("{{ url }}")
  * @Route(":action/:params", paths=[action=1,params=2])
  * @Route(":action", paths=[action=1])
  */
-class CustomerController extends ControllerBase
+class {{ model_name }}Controller extends ControllerBase
 {
     public function indexAction()
     {
-        $form = $this->validator->createForm(CustomerForm::CLASS);
+        $form = $this->validator->createForm({{ model_name }}Form::CLASS);
         FormHelper::process($form);
         $this->render([
             'columns' => FormHelper::getColumns($form),
             'has_textarea' => FormHelper::hasTextarea($form),
             'form' => $form,
-            'primary_key' => 'id'
+            'primary_key' => '{{ primary_key }}'
         ]);
     }
 
@@ -33,7 +36,7 @@ class CustomerController extends ControllerBase
      */
     public function createAction()
     {
-        $this->save(new Customer);
+        $this->save(new {{ model_name }});
     }
 
     /**
@@ -43,10 +46,10 @@ class CustomerController extends ControllerBase
     public function updateAction()
     {
         $id = $this->request->get('id');
-        $model = Customer::findFirst($id);
+        $model = {{ model_name }}::findFirst($id);
         if (!$model) {
             throw new Exception(
-                "Customer id '$id' not found",
+                "{{ model_name }} id '$id' not found",
                 Exception::ERROR_NOT_FOUND
             );
         }
@@ -55,7 +58,7 @@ class CustomerController extends ControllerBase
 
     private function save($model)
     {
-        $form = $this->validator->createForm(CustomerForm::CLASS);
+        $form = $this->validator->createForm({{ model_name }}Form::CLASS);
         if ($form->isValid($this->request->getPost(), $model)) {
             if ($model->save()) {
                 $this->response->setJsonContent([
@@ -69,17 +72,17 @@ class CustomerController extends ControllerBase
             throw new ValidationException($form->getMessages());
         }
     }
-    
+
     /**
      * @Json
      * @CsrfToken(repeatOk=true)
      */
     public function deleteAction($id)
     {
-        $model = Customer::findFirst($id);
+        $model = {{ model_name }}::findFirst($id);
         if (!$model) {
             throw new Exception(
-                "Customer id '$id' not found",
+                "{{ model_name }} id '$id' not found",
                 Exception::ERROR_NOT_FOUND
             );
         }
@@ -100,12 +103,12 @@ class CustomerController extends ControllerBase
     {
         $query = $this->objectMapper->map($this->request->get(), Query::CLASS);
         $criteria = [];
-        $count = Customer::count($criteria);
+        $count = {{ model_name }}::count($criteria);
         $criteria['limit'] = [
             'offset' => $query->start,
             'number' => $query->length
         ];
-        $models = Customer::find($criteria)->toArray();
+        $models = {{ model_name }}::find($criteria)->toArray();
         $this->response->setJsonContent(array(
             'draw' => $query->draw,
             'start' => $query->start,

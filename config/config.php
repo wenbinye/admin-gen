@@ -44,7 +44,7 @@ if (PHP_SAPI != 'cli') {
     $config->merge(new Config([
         'eventListeners' => [
             'dispatch' => [
-                'PhalconX\Mvc\Controller\Annotations',
+                'PhalconX\Mvc\Controller\Filters',
                 'AdminGen\Mvc\ExceptionHandler'
             ],
         ]

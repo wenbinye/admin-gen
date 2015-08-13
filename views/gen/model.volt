@@ -1,10 +1,10 @@
 {{ '<?php' }}
 
-namespace {{namespace}};
+namespace {{ namespace }}\{{ type.namespace }};
 
 use PhalconX\Mvc\Model;
 
-class {{class_name}} extends Model
+class {{ model_name }} extends Model
 {
 {% for column in columns %}
    /**
@@ -18,4 +18,11 @@ class {{class_name}} extends Model
    {
        return "{{ table_name }}";
    }
+{% if connection is defined %}
+
+   public function initialize()
+   {
+       $this->setConnectionService('{{ connection }}');
+   }
+{% endif %}
 }

@@ -8,6 +8,7 @@ define([
 ], function($, Form, Dialog, Alert) {
     var Record = {
         baseUrl: undefined,
+        primaryKey: undefined,
         create: function(data, success, error) {
             this.save(data, success, error, true);
         },
@@ -32,13 +33,13 @@ define([
                 }
             });
         },
-        del: function(id, callback) {
+        del: function(record, callback) {
             $.ajax({
                 "type": "POST",
-                "url": this.baseUrl + "/delete/" + id,
+                "url": this.baseUrl + "/delete/" + record[this.primaryKey],
                 "data": Form.getCsrfToken({}),
-                "success": function() {
-                    callback();
+                "success": function(res) {
+                    callback(res);
                 },
                 "error": this.errorHandler
             });
@@ -62,8 +63,8 @@ define([
             container: '#data-table'
         });
         Record.baseUrl = options.baseUrl;
+        Record.primaryKey = options.primaryKey;
         var self = this;
-        this.records = {};
         var $container = $(options.container);
         var btnTemplate = Hogan.compile($(".buttons-tmpl", $container).text());
         var $table = $(".table", $container);
@@ -82,31 +83,33 @@ define([
             },
 		    columns: options.columns,
 		    rowCallback: function(row, data) {
-                self.records[data[options.primary_key]] = data;
+                $(row).data('record', data);
 			    $('td:eq('+ ncol +')', row).html(btnTemplate.render(data));
 		    }
 	    }).DataTable();
         var editDialog = new EditDialog().init({
             container: $(".edit-dialog", $container),
             name: options.name,
-            display_column: options.display_column,
+            displayColumn: options.displayColumn,
             callback: function() {
                 dataTable.ajax.reload(null, false);
             }
         });
         $table.delegate(".delete-btn", "click", function() {
             var $this = $(this);
-            if (!confirm("Are you sure? This action cannot be undone.")) {
-                return false;
-            }
-            var id = $this.parent().data('id');
-            Record.del(id, function() {
-                dataTable.ajax.reload(null, false);
-            });
+            Dialog.confirm("Confirmation", "Are you sure? This action cannot be undone.", function(ans) {
+                if (!ans) {
+                    return false;
+                }
+                var record = $this.parents('tr').data('record');
+                Record.del(record, function() {
+                    dataTable.ajax.reload(null, false);
+                });
+            })
         });
         $table.delegate(".edit-btn", "click", function() {
-            var id = $(this).parent().data('id');
-            editDialog.show(self.records[id]);
+            var record = $(this).parents('tr').data('record');
+            editDialog.show(record);
         });
         $(".create-btn", $container).click(function() {
             editDialog.show();
@@ -126,7 +129,7 @@ define([
         });
         this.callback = options.callback;
         this.name = options.name;
-        this.display_column = options.display_column;
+        this.displayColumn = options.displayColumn;
         return this;
     };
 
@@ -137,8 +140,8 @@ define([
             this.create = false;
             Form.resetForm(this.$form, record);
             var display = this.name;
-            if (this.display_column) {
-                display = record[this.display_column];
+            if (this.displayColumn) {
+                display = record[this.displayColumn];
             }
             $("h2", this.dialog).text("Update " + display);
         } else {
