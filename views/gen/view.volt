@@ -1,3 +1,5 @@
+{{ '{% do set_title("' ~ name ~ '") %}' }}
+
 {{ '{% macro thead(columns) %}
 <tr>
   {% for column in columns %}

@@ -136,6 +136,7 @@ define([
     EditDialog.prototype.show = function(record) {
         var self = this;
         $(".error-desc", this.$form).addClass('hide');
+        $(".form-group", this.$form).removeClass("has-error");
         if (record) {
             this.create = false;
             Form.resetForm(this.$form, record);

@@ -2,3 +2,11 @@ cache/
 logs/
 vendor/
 composer.lock
+src/Controllers/CustomerController.php
+src/Controllers/ScienceBookController.php
+src/Forms/Customer.php
+src/Forms/ScienceBook.php
+src/Models/ScienceBook.php
+src/Models/Customer.php
+views/science_book/
+views/customer/

@@ -88,6 +88,9 @@ class Generator
     
     protected function prepare(Type $type)
     {
+        if (!$this->getConnection()->tableExists($this->table)) {
+            throw new Exception("Table {$this->table} does not exist");
+        }
         $name = $this->table;
         if ($this->tablePrefix && Text::startsWith($name, $this->tablePrefix)) {
             $name = substr($name, strlen($this->tablePrefix));

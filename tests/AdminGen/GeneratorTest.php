@@ -12,8 +12,5 @@ class GeneratorTest extends TestCase
     
     public function setUp()
     {
-        $view = 
-        
-        $generator = new Generator(
     }
 }
