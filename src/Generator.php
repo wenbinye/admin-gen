@@ -76,7 +76,7 @@ class Generator
             $columns = $this->getConnection()->describeColumns($this->table);
             $vars['columns'] = $this->getColumns($columns, $type);
         }
-        $code = $this->view->getPartial('gen/' . $type->value, $vars);
+        $code = $this->view->getPartial($this->getViewName($type), $vars);
         if ($this->debug) {
             $this->logger->info("Output to file $outfile");
             return $code;
@@ -240,6 +240,11 @@ class Generator
             $conn = 'db';
         }
         return Util::service($conn);
+    }
+
+    protected function getViewName(Type $type)
+    {
+        return 'gen/' . $type->value;
     }
     
     public function getTable()
