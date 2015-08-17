@@ -118,7 +118,7 @@ class Generator
         $ret = [];
         if ($type->value == Type::MODEL) {
             foreach ($columns as $col) {
-                $ret[] = [
+                $ret[$col->getName()] = [
                     'name' => $col->getName(),
                     'type' => $this->getTypeName($col->getType()),
                     'default' => $this->stringify($col->getDefault())
@@ -126,7 +126,7 @@ class Generator
             }
         } elseif ($type->value == Type::FORM) {
             foreach ($columns as $col) {
-                $ret[] = [
+                $ret[$col->getName()] = [
                     'name' => $col->getName(),
                     'element' => $this->createElement($col),
                     'validator' => $this->createValidator($col)
